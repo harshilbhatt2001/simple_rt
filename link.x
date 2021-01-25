@@ -10,6 +10,7 @@ MEMORY
 ENTRY(Reset);
 
 EXTERN(RESET_VECTOR);
+EXTERN(EXCEPTIONS);
 
 SECTIONS
 {
@@ -20,6 +21,9 @@ SECTIONS
 
         /* Second entry: reset vector */
         KEEP(*(.vector_table.reset_vector));
+
+        /* The next 14 entries are exception vectors */
+        KEEP(*(.vector_table.exceptions));
     } > FLASH
 
     .text :
@@ -35,14 +39,14 @@ SECTIONS
     .bss :
     {
         /* _s? and _e? is used to specify start and end address of ? sections 
-           which will later be used in Rust code */
+         * which will later be used in Rust code */
         _sbss = .;
         *(.bss .bss.*);
         _ebss = .;
     } > RAM
 
     /* We set the Load Memory Access (LMA) of ".data" section at the end of the
-       ".rodata" section */
+     * ".rodata" section */
     .data : AT(ADDR(.rodata) + SIZEOF(.rodata))
     {
         /* _s? and _e? is used to specify start and end address of ? sections 
@@ -56,10 +60,20 @@ SECTIONS
     _sidata = LOADADDR(.data);
 
     /* This section is related to exception handling but we are not doing stack
-       unwinding on panics and they might take up space in Flash memory, so we 
-       discard them. */
+     * unwinding on panics and they might take up space in Flash memory, so we 
+     * discard them. */
     /DISCARD/ :
     {
         *(.ARM.exidx .ARM.exidx.*);
     }
 }
+
+/* "PROVIDE" is used to give default value to handlers left undefined in rt */
+PROVIDE(NMI = DefaultExceptionHandler);
+PROVIDE(HardFault = DefaultExceptionHandler);
+PROVIDE(MemManage = DefaultExceptionHandler);
+PROVIDE(BusFault = DefaultExceptionHandler);
+PROVIDE(UsageFault = DefaultExceptionHandler);
+PROVIDE(SVCall = DefaultExceptionHandler);
+PROVIDE(PendSV = DefaultExceptionHandler);
+PROVIDE(SysTick = DefaultExceptionHandler);
