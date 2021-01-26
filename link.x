@@ -26,16 +26,19 @@ SECTIONS
         KEEP(*(.vector_table.exceptions));
     } > FLASH
 
+    /* Code is stored here */
     .text :
     {
         *(.text .text.*);
     } > FLASH
 
+    /* Read-only data */
     .rodata :
     {
         *(.rodata .rodata.*);
     } > FLASH 
 
+    /* Uninitilialised data is stored in bss */
     .bss :
     {
         /* _s? and _e? is used to specify start and end address of ? sections 
