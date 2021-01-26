@@ -1,6 +1,10 @@
-use std::{env, error::Error, fs::File, io::Write, path::PathBuf};
-
-use cc::Build;
+use std::{
+    env, 
+    error::Error, 
+    fs::{self, File}, 
+    io::Write, 
+    path::PathBuf,
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // build directory for this crate
@@ -12,11 +16,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     // put "link.x" in the build directory
     File::create(out_dir.join("link.x"))?.write_all(include_bytes!("link.x"))?;
 
-    // assemble "asm.s" file
-    Build::new().file("asm.s").compile("asm");
+    // link to "librt.a"
+    fs::copy("librt.a", out_dir.join("librt.a"));
 
-    // rebuild if "asm.s" changed
-    println!("cargo::rerun-if-changed=asm.s");
+    // rebuild if "librt.a" has changed
+    println!("cargo::rerun-if-changed=librt.a");
 
     Ok(())
 }
